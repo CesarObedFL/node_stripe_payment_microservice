@@ -1,0 +1,25 @@
+{
+  "name": "stripe_payments",
+  "version": "1.0.0",
+  "description": "Configurable microservice for multiple services and products to securely and scalably integrate payments with Stripe",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CesarObedFL/stripe_generic_payments.git"
+  },
+  "keywords": [
+    "Stripe",
+    "node",
+    "nodejs",
+    "express"
+  ],
+  "author": "CesarObedFL",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CesarObedFL/stripe_generic_payments/issues"
+  },
+  "homepage": "https://github.com/CesarObedFL/stripe_generic_payments#readme"
+}
