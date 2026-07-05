@@ -24,6 +24,7 @@
   "homepage": "https://github.com/CesarObedFL/stripe_generic_payments#readme",
   "dependencies": {
     "body-parser": "^2.3.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "stripe": "^22.3.0"
   }
 }
