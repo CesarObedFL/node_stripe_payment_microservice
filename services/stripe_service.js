@@ -1,8 +1,4 @@
-/**
- * Stripe client configuration and initialization.
- */
-
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error('❌ STRIPE_SECRET_KEY is not defined in environment variables');

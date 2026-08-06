@@ -1,8 +1,8 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const payment_routes = require('./routes/payment_routes.js');
-const { handle_webhook } = require('./webhooks/webhook_handler');
+import dotenv from 'dotenv';
+import { express } from 'express';
+import { cors } from 'cors';
+import { payment_routes } from './routes/payment_routes.js';
+import { handle_webhook } from './webhooks/webhook_handler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

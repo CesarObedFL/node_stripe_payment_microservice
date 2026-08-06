@@ -1,4 +1,4 @@
-const stripe = require('../services/stripeService');
+import stripe from '../services/stripe_service.js';
 
 /**
  * Handles incoming Stripe webhook events.

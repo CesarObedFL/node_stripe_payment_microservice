@@ -1,5 +1,5 @@
-const express = require('express');
-const { createPaymentIntent, getPaymentIntent } = require('../controllers/paymentController');
+import express from 'express';
+import { createPaymentIntent, getPaymentIntent } from '../controllers/payment_controller.js';
 
 const router = express.Router();
 
