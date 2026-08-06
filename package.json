@@ -4,7 +4,8 @@
   "description": "Configurable microservice for multiple services and products to securely and scalably integrate payments with Stripe",
   "main": "index.js",
   "scripts": {
-    "test": "npm run dev"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,9 @@
   "homepage": "https://github.com/CesarObedFL/node_stripe_payment_microservice#readme",
   "dependencies": {
     "body-parser": "^2.3.0",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
+    "nodemon": "^3.1.14",
     "stripe": "^22.3.0"
   }
 }
