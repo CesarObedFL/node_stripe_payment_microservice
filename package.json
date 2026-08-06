@@ -19,9 +19,9 @@
   "author": "CesarObedFL",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/CesarObedFL/stripe_payments/issues"
+    "url": "https://github.com/CesarObedFL/node_stripe_payment_microservice/issues"
   },
-  "homepage": "https://github.com/CesarObedFL/stripe_payments#readme",
+  "homepage": "https://github.com/CesarObedFL/node_stripe_payment_microservice#readme",
   "dependencies": {
     "body-parser": "^2.3.0",
     "express": "^5.2.1",
