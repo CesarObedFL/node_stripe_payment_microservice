@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
-import { express } from 'express';
-import { cors } from 'cors';
-import { payment_routes } from './routes/payment_routes.js';
-import { handle_webhook } from './webhooks/webhook_handler.js';
+import express from 'express';
+import cors from 'cors';
+import payment_routes from './routes/payment_routes.js';
+import handle_webhook from './webhooks/webhook_handler.js';
 
+dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';

@@ -1,9 +1,9 @@
 import express from 'express';
-import { createPaymentIntent, getPaymentIntent } from '../controllers/payment_controller.js';
+import { create_payment_intent, get_payment_intent } from '../controllers/payment_controller.js';
 
 const router = express.Router();
 
-router.post('/create-payment-intent', createPaymentIntent);
-router.get('/payment-intent/:id', getPaymentIntent);
+router.post('/create-payment-intent', create_payment_intent);
+router.get('/payment-intent/:id', get_payment_intent);
 
-module.exports = router;
+export default router;

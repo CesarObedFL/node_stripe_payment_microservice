@@ -7,13 +7,13 @@ import stripe from '../services/stripe_service.js';
  * @param {object} res - Express response object
  * @return {Promise<void>}
  */
-exports.handleWebhook = async (req, res) => {
+async function handle_webhook(req, res) {
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
         console.warn('⚠️ STRIPE_WEBHOOK_SECRET not set. Skipping signature verification.');
-        return processEvent(req.body, res);
+        return process_event(req.body, res);
     }
 
     if (!sig) {
@@ -28,8 +28,8 @@ exports.handleWebhook = async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    await processEvent(event, res);
-};
+    await process_event(event, res);
+}
 
 /**
  * Processes the webhook event based on its type.
@@ -38,20 +38,20 @@ exports.handleWebhook = async (req, res) => {
  * @param {object} res - Express response object
  * @return {Promise<void>}
  */
-async function processEvent(event, res) {
+async function process_event(event, res) {
     console.log(`📩 Received webhook event: ${event.type}`);
 
     switch (event.type) {
         case 'payment_intent.succeeded':
-            await handlePaymentSucceeded(event.data.object);
+            await handle_payment_succeeded(event.data.object);
             break;
 
         case 'payment_intent.payment_failed':
-            await handlePaymentFailed(event.data.object);
+            await handle_payment_failed(event.data.object);
             break;
 
         case 'charge.refunded':
-            await handleChargeRefunded(event.data.object);
+            await handle_charge_refunded(event.data.object);
             break;
 
         default:
@@ -67,7 +67,7 @@ async function processEvent(event, res) {
  * @param {object} paymentIntent - The succeeded PaymentIntent object
  * @return {Promise<void>}
  */
-async function handlePaymentSucceeded(paymentIntent) {
+async function handle_payment_succeeded(paymentIntent) {
     console.log(`✅ PaymentIntent ${paymentIntent.id} succeeded`);
     console.log(`💰 Amount: ${paymentIntent.amount} ${paymentIntent.currency}`);
     console.log(`📦 Plan: ${paymentIntent.metadata.plan_id || 'unknown'}`);
@@ -83,7 +83,7 @@ async function handlePaymentSucceeded(paymentIntent) {
  * @param {object} paymentIntent - The failed PaymentIntent object
  * @return {Promise<void>}
  */
-async function handlePaymentFailed(paymentIntent) {
+async function handle_payment_failed(paymentIntent) {
     console.log(`❌ PaymentIntent ${paymentIntent.id} failed`);
     // Aquí puedes notificar al cliente que el pago falló
 }
@@ -94,7 +94,10 @@ async function handlePaymentFailed(paymentIntent) {
  * @param {object} charge - The refunded Charge object
  * @return {Promise<void>}
  */
-async function handleChargeRefunded(charge) {
+async function handle_charge_refunded(charge) {
     console.log(`↩️ Charge ${charge.id} was refunded`);
     // Aquí puedes revertir el estado del plan
 }
+
+// Exportación por defecto de la función principal
+export default handle_webhook;

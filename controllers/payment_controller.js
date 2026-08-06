@@ -6,7 +6,7 @@ import stripe from '../services/stripe_service.js';
  * @param {string} plan_id - The plan identifier (e.g., 'freelance_basic')
  * @return {object} Plan details including amount, currency, description, and metadata.
  */
-const getPlanDetails = (plan_id) => {
+const get_plan_details = (plan_id) => {
     const plans = {
         'freelance_basic': {
             amount: 11600,  // $116.00 USD incluye IVA
@@ -98,7 +98,7 @@ const getPlanDetails = (plan_id) => {
  * @param {object} res - Express response object
  * @return {Promise<void>}
  */
-exports.createPaymentIntent = async (req, res) => {
+export const create_payment_intent = async (req, res) => {
     try {
         const { plan_id, customer_email, metadata = {} } = req.body;
 
@@ -110,7 +110,7 @@ exports.createPaymentIntent = async (req, res) => {
         }
 
         // Get plan details
-        const plan = getPlanDetails(plan_id);
+        const plan = get_plan_details(plan_id);
 
         // Create PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
@@ -125,9 +125,6 @@ exports.createPaymentIntent = async (req, res) => {
                 service: 'payment-microservice',
                 timestamp: new Date().toISOString()
             },
-            // Para suscripciones mensuales, descomenta:
-            // payment_method_types: ['card'],
-            // setup_future_usage: 'off_session' // si quieres cobrar recurrente
         });
 
         res.status(201).json({
@@ -142,6 +139,39 @@ exports.createPaymentIntent = async (req, res) => {
         console.error('❌ Error creating PaymentIntent:', error);
         res.status(500).json({
             error: 'Failed to create payment intent',
+            message: error.message
+        });
+    }
+};
+
+/**
+ * Retrieves an existing PaymentIntent by ID.
+ *
+ * GET /api/payments/payment-intent/:id
+ *
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @return {Promise<void>}
+ */
+export const get_payment_intent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ error: 'PaymentIntent ID is required' });
+        }
+        const paymentIntent = await stripe.paymentIntents.retrieve(id);
+        res.status(200).json({
+            id: paymentIntent.id,
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            status: paymentIntent.status,
+            clientSecret: paymentIntent.client_secret,
+            metadata: paymentIntent.metadata
+        });
+    } catch (error) {
+        console.error('❌ Error retrieving PaymentIntent:', error);
+        res.status(500).json({
+            error: 'Failed to retrieve payment intent',
             message: error.message
         });
     }
