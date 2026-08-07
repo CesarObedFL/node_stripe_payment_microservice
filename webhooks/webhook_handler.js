@@ -1,4 +1,10 @@
 import stripe from '../services/stripe_service.js';
+import { send_email } from '../services/email_service.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL;
 
 /**
  * Handles incoming Stripe webhook events.
@@ -73,8 +79,34 @@ async function handle_payment_succeeded(paymentIntent) {
     console.log(`📦 Plan: ${paymentIntent.metadata.plan_id || 'unknown'}`);
     console.log(`👤 Customer: ${paymentIntent.receipt_email || 'no email'}`);
 
-    // 1. sent email for confirmation to the client
-    // 2. notify to the frontend the payment successful
+    const customerEmail = paymentIntent.receipt_email;
+    const planName = paymentIntent.metadata.plan_name || paymentIntent.metadata.plan_id || 'Plan adquirido';
+
+    // --- sent email to the client ---
+    if (customerEmail) {
+        await send_email(
+            customerEmail,
+            `✅ Confirmación de pago - ${planName}`,
+            `Hemos recibido tu pago por <strong>${planName}</strong>.<br>
+             <strong>Monto:</strong> ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}<br>
+             <strong>ID:</strong> ${paymentIntent.id}<br>
+             En breve recibirás más información sobre la activación de tu servicio.<br><br>
+             Saludos,<br>El equipo de CesarObedFL`
+        );
+    }
+
+    // --- notify to the admin ---
+    if (ADMIN_EMAIL) {
+        await send_email(
+            ADMIN_EMAIL,
+            `💰 Nuevo pago recibido - ${planName}`,
+            `Cliente: ${customerEmail || 'Sin email'}<br>
+             Plan: ${planName}<br>
+             Monto: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}<br>
+             ID: ${paymentIntent.id}<br>
+             Metadatos: ${JSON.stringify(paymentIntent.metadata)}`
+        );
+    }
 }
 
 /**
@@ -85,7 +117,32 @@ async function handle_payment_succeeded(paymentIntent) {
  */
 async function handle_payment_failed(paymentIntent) {
     console.log(`❌ PaymentIntent ${paymentIntent.id} failed`);
-    // Aquí puedes notificar al cliente que el pago falló
+    const customerEmail = paymentIntent.receipt_email;
+    const planName = paymentIntent.metadata.plan_name || paymentIntent.metadata.plan_id || 'Plan';
+
+    // --- email to the client ---
+    if (customerEmail) {
+        await send_email(
+            customerEmail,
+            `❌ Problema con tu pago - ${planName}`,
+            `Tu pago por <strong>${planName}</strong> no pudo ser procesado.<br>
+             Por favor, intenta nuevamente o contacta a soporte si el problema persiste.<br>
+             ID de transacción: ${paymentIntent.id}<br><br>
+             Saludos,<br>El equipo de CesarObedFL`
+        );
+    }
+
+    // --- notify to the admin ---
+    if (ADMIN_EMAIL) {
+        await send_email(
+            ADMIN_EMAIL,
+            `⚠️ Pago fallido - ${planName}`,
+            `Cliente: ${customerEmail || 'Sin email'}<br>
+             Plan: ${planName}<br>
+             ID: ${paymentIntent.id}<br>
+             Motivo: ${paymentIntent.last_payment_error?.message || 'Desconocido'}`
+        );
+    }
 }
 
 /**
@@ -96,8 +153,33 @@ async function handle_payment_failed(paymentIntent) {
  */
 async function handle_charge_refunded(charge) {
     console.log(`↩️ Charge ${charge.id} was refunded`);
-    // Aquí puedes revertir el estado del plan
+    const customerEmail = charge.receipt_email;
+    const amountRefunded = charge.amount_refunded || charge.amount;
+    const currency = charge.currency;
+
+    // --- email to the client ---
+    if (customerEmail) {
+        await send_email(
+            customerEmail,
+            `↩️ Reembolso procesado - ${charge.id}`,
+            `Se ha procesado un reembolso por <strong>${(amountRefunded / 100).toFixed(2)} ${currency.toUpperCase()}</strong>.<br>
+             El importe se reflejará en tu tarjeta en los próximos días.<br>
+             ID de cargo: ${charge.id}<br><br>
+             Saludos,<br>El equipo de CesarObedFL`
+        );
+    }
+
+    // --- notify to the admin ---
+    if (ADMIN_EMAIL) {
+        await send_email(
+            ADMIN_EMAIL,
+            `↩️ Reembolso realizado - ${charge.id}`,
+            `Cliente: ${customerEmail || 'Sin email'}<br>
+             Monto reembolsado: ${(amountRefunded / 100).toFixed(2)} ${currency.toUpperCase()}<br>
+             ID de cargo: ${charge.id}<br>
+             Motivo: ${charge.refund_reason || 'No especificado'}`
+        );
+    }
 }
 
-// Exportación por defecto de la función principal
 export default handle_webhook;
