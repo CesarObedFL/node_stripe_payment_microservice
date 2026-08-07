@@ -1,5 +1,7 @@
+// webhooks/webhook_handler.js
 import stripe from '../services/stripe_service.js';
 import { send_email } from '../services/email_service.js';
+import { save_payment_record } from '../services/storage_service.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -82,7 +84,23 @@ async function handle_payment_succeeded(paymentIntent) {
     const customerEmail = paymentIntent.receipt_email;
     const planName = paymentIntent.metadata.plan_name || paymentIntent.metadata.plan_id || 'Plan adquirido';
 
-    // --- sent email to the client ---
+    // save the payment info into the storage microservice
+    try {
+        await save_payment_record({
+            payment_intent_id: paymentIntent.id,
+            plan_id: paymentIntent.metadata.plan_id || 'unknown',
+            plan_name: planName,
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            customer_email: customerEmail || 'no-email@example.com',
+            metadata: paymentIntent.metadata,
+            status: 'succeeded'
+        });
+    } catch (error) {
+        console.error('⚠️ Storage save failed but continuing...');
+    }
+
+    // emailing to the client
     if (customerEmail) {
         await send_email(
             customerEmail,
@@ -95,7 +113,7 @@ async function handle_payment_succeeded(paymentIntent) {
         );
     }
 
-    // --- notify to the admin ---
+    // notify to the admin
     if (ADMIN_EMAIL) {
         await send_email(
             ADMIN_EMAIL,
@@ -120,7 +138,7 @@ async function handle_payment_failed(paymentIntent) {
     const customerEmail = paymentIntent.receipt_email;
     const planName = paymentIntent.metadata.plan_name || paymentIntent.metadata.plan_id || 'Plan';
 
-    // --- email to the client ---
+    // emailing to the client
     if (customerEmail) {
         await send_email(
             customerEmail,
@@ -132,7 +150,7 @@ async function handle_payment_failed(paymentIntent) {
         );
     }
 
-    // --- notify to the admin ---
+    // notify to the admin
     if (ADMIN_EMAIL) {
         await send_email(
             ADMIN_EMAIL,
@@ -157,7 +175,7 @@ async function handle_charge_refunded(charge) {
     const amountRefunded = charge.amount_refunded || charge.amount;
     const currency = charge.currency;
 
-    // --- email to the client ---
+    // emailing to the client
     if (customerEmail) {
         await send_email(
             customerEmail,
@@ -169,7 +187,7 @@ async function handle_charge_refunded(charge) {
         );
     }
 
-    // --- notify to the admin ---
+    // notify to the admin
     if (ADMIN_EMAIL) {
         await send_email(
             ADMIN_EMAIL,
