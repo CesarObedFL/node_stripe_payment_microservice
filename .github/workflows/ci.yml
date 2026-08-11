@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file
+        run: |
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> .env
+          echo "PORT=3200" >> .env
+          echo "CLIENT_URL=http://localhost:8888" >> .env
+          echo "STORAGE_MS_URL=${{ secrets.STORAGE_MS_URL }}" >> .env
+          echo "STORAGE_TOKEN=${{ secrets.STORAGE_TOKEN }}" >> .env
+
+      - name: Run integration tests
+        run: npm run test:integration
