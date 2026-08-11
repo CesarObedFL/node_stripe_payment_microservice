@@ -4,3 +4,4 @@ pnpm-lock.yaml
 logs/
 *.log
 .DS_Store
+/tests/results.txt

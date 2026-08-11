@@ -42,9 +42,13 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// ============ START SERVER ============
 
-app.listen(PORT, () => {
-  console.log(`✅ Payment microservice running on http://localhost:${PORT}`);
-  console.log(`📡 Webhook endpoint: http://localhost:${PORT}/webhook`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`✅ Payment microservice running on http://localhost:${PORT}`);
+    console.log(`📡 Webhook endpoint: http://localhost:${PORT}/webhook`);
+  });
+}
+
+
+export default app;
