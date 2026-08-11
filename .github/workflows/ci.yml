@@ -49,5 +49,3 @@ jobs:
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           PORT: 3200
           CLIENT_URL: ${{ secrets.CLIENT_URL || 'http://localhost:8888' }}
-          STORAGE_MS_URL: ${{ secrets.STORAGE_MS_URL }}
-          STORAGE_TOKEN: ${{ secrets.STORAGE_TOKEN }}
