@@ -33,7 +33,7 @@ app.use(express.json());
 
 // ============ ROUTES ============
 
-app.use('/api/payments', payment_routes);
+app.use('/payments', payment_routes);
 
 /**
  * Health check endpoint.
