@@ -1,0 +1,54 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:                 # Depends on test job
+      runs-on: ubuntu-latest
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        # ----------------------------------------------------------
+        # Step: Deploy via SSH
+        # ----------------------------------------------------------
+        # The following secrets must be set in the GitHub repository:
+        #   - SSH_HOST        : IP or domain of the VPS
+        #   - SSH_USER        : SSH username
+        #   - SSH_PRIVATE_KEY : Private SSH key (with proper permissions)
+        #   - SSH_PORT        : SSH port (optional, defaults to 22)
+        - name: Deploy via SSH
+          uses: appleboy/ssh-action@v1.2.0
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            port: ${{ secrets.SSH_PORT || 22 }}
+            script: |
+              set -e
+              echo "🚀 Starting deployment..."
+
+              # 1. Go to the project directory
+              cd /var/www/node_stripe_payment_microservice
+
+              # 2. Pull the latest changes
+              git pull origin main
+
+              # 3. Install dependencies (if any changed)
+              pnpm install --prefer-frozen-lockfile --ignore-workspace
+
+              # 4. Reload the app into the PM2 processes
+              if pm2 describe node_stripe_payment_microservice > /dev/null 2>&1; then
+                pm2 reload node_stripe_payment_microservice
+              else
+                pm2 start server.js --name node_stripe_payment_microservice --env production
+              fi
+
+              # 5. Save PM2 process list (optional)
+              pm2 save
+
+              echo "✅ Deployment completed successfully!"
