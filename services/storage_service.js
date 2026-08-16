@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const STORAGE_MS_URL = process.env.STORAGE_MS_URL || 'http://localhost:4000';
+const STORAGE_MS_URL = process.env.STORAGE_MS_URL;
 const STORAGE_TOKEN = process.env.STORAGE_TOKEN;
-const STORAGE_PROJECT = 'services-payments';
-const STORAGE_FILE = 'services-payments.json';
+const STORAGE_PROJECT = process.env.STORAGE_PROJECT;
+const STORAGE_FILE = process.env.STORAGE_FILE;
 
 /**
  * Saves a payment record to the storage microservice.
