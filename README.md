@@ -83,6 +83,7 @@ Create a .env file in the root with the following variables. All are required ex
 
 ## 🔌 API Endpoints
 | Method | Route | Description | Body (JSON) | Success Response | Error Codes |
+| ----- | ----- | ----- | ----- | ----- | ----- |
 | POST | /api/payments/create-payment-intent | Creates a PaymentIntent for a plan. | { "plan_id": "freelance_basic", "customer_email": "client@mail.com", "metadata": {} } | 201 with clientSecret, paymentIntentId, amount, currency, plan. | 400 (missing or invalid plan), 500 (internal error) |
 | GET | /api/payments/payment-intent/:id | Retrieves the status of a PaymentIntent. | (URL param) | 200 with id, status, clientSecret, etc. | 400 (missing ID), 500 (internal error) |
 | POST | /webhook | Endpoint to receive Stripe events. | (Stripe raw body, consult the official docs [stripe-docs]) | 200 { received: true } | 400 (invalid signature) |
@@ -114,13 +115,11 @@ The microservice handles three Stripe events:
 
 To test locally with Stripe CLI:
 ```
-bash
 stripe listen --forward-to localhost:3300/webhook
 ```
 
 Then trigger events with:
 ```
-bash
 stripe trigger payment_intent.succeeded --add payment_intent:receipt_email=client@test.com
 ```
 
@@ -129,7 +128,6 @@ For production, configure the webhook in the Stripe Dashboard with your server's
 ## 🧪 Testing
 Integration Tests
 ```
-bash
 pnpm run test:integration
 ```
 Runs all tests that verify the main endpoint (/create-payment-intent) behaviour, including:
@@ -151,12 +149,10 @@ Triggers on pushes to main/develop and on pull requests.
 
 Using Docker Compose
 ```
-bash
 docker-compose up -d
 ```
 Manual Build
 ```
-bash
 docker build -t payment-microservice .
 docker run -p 3300:3300 --env-file .env payment-microservice
 ```
