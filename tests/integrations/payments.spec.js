@@ -15,9 +15,9 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 describe('Integración con Stripe API (sin correos)', () => {
     let createdPaymentIntentId;
 
-    it('POST /api/payments/create-payment-intent → debe crear un PaymentIntent válido', async () => {
+    it('POST /payments/create-payment-intent → debe crear un PaymentIntent válido', async () => {
         const response = await request(app)
-            .post('/api/payments/create-payment-intent')
+            .post('/payments/create-payment-intent')
             .send({
                 plan_id: 'freelance_basic',
             });
@@ -30,9 +30,9 @@ describe('Integración con Stripe API (sin correos)', () => {
         createdPaymentIntentId = clientSecret.split('_secret_')[0];
     });
 
-    it('POST /api/payments/create-payment-intent → debe rechazar plan_id inválido', async () => {
+    it('POST /payments/create-payment-intent → debe rechazar plan_id inválido', async () => {
         const response = await request(app)
-            .post('/api/payments/create-payment-intent')
+            .post('/payments/create-payment-intent')
             .send({
                 plan_id: 'plan_invalido',
             });
@@ -41,9 +41,9 @@ describe('Integración con Stripe API (sin correos)', () => {
         expect(response.body.error).toContain('Invalid plan_id');
     });
 
-    it('POST /api/payments/create-payment-intent → debe aceptar plan_id válido sin email', async () => {
+    it('POST /payments/create-payment-intent → debe aceptar plan_id válido sin email', async () => {
         const response = await request(app)
-            .post('/api/payments/create-payment-intent')
+            .post('/payments/create-payment-intent')
             .send({
                 plan_id: 'maintenance_basic',
             });
@@ -52,9 +52,9 @@ describe('Integración con Stripe API (sin correos)', () => {
         expect(response.body).toHaveProperty('clientSecret');
     });
 
-    it('POST /api/payments/create-payment-intent → debe devolver el monto correcto según el plan', async () => {
+    it('POST /payments/create-payment-intent → debe devolver el monto correcto según el plan', async () => {
         const response = await request(app)
-            .post('/api/payments/create-payment-intent')
+            .post('/payments/create-payment-intent')
             .send({
                 plan_id: 'freelance_premium',
             });
