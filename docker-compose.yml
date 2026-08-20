@@ -6,10 +6,10 @@ services  :
       dockerfile: Dockerfile
     container_name: node_stripe_payment_microservice
     ports:
-      - "3200:3200"
+      - "3300:3300"
     environment:
       - NODE_ENV=development
-      - PORT=3200
+      - PORT=3300
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - CLIENT_URL=${CLIENT_URL:-http://localhost:8888}

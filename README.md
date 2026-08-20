@@ -57,7 +57,7 @@ nano .env
 
 # Start in development mode
 pnpm run dev
-The server will be available at http://localhost:3200 (or the port you defined).
+The server will be available at http://localhost:3300 (or the port you defined).
 ```
 
 ## 🌐 Configuration
@@ -67,7 +67,7 @@ Create a .env file in the root with the following variables. All are required ex
 
 | Variable | Description | Required |
 | ---- | ----------- | ------------ |
-| PORT | Port on which the server will run (e.g. 3200). | Yes |
+| PORT | Port on which the server will run (e.g. 3300). | Yes |
 | CLIENT URL | Frontend URL allowed by CORS (e.g. http://localhost:5173). | Yes |
 | STRIPE SECRET KEY | Stripe secret key (test or live mode). | Yes |
 | STRIPE WEBHOOK SECRET | Webhook signing secret. | No (for local testing with Stripe CLI) |
@@ -115,7 +115,7 @@ The microservice handles three Stripe events:
 To test locally with Stripe CLI:
 ```
 bash
-stripe listen --forward-to localhost:3200/webhook
+stripe listen --forward-to localhost:3300/webhook
 ```
 
 Then trigger events with:
@@ -158,7 +158,7 @@ Manual Build
 ```
 bash
 docker build -t payment-microservice .
-docker run -p 3200:3200 --env-file .env payment-microservice
+docker run -p 3300:3300 --env-file .env payment-microservice
 ```
 The Dockerfile and docker-compose.yml are ready to use.
 
