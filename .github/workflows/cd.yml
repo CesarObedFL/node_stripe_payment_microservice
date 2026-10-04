@@ -1,54 +1,54 @@
-name: CD
+name: CD - Payment Microservice
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  deploy:                 # Depends on test job
-      runs-on: ubuntu-latest
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  deploy:
+    name: Deploy Storage to VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-        # ----------------------------------------------------------
-        # Step: Deploy via SSH
-        # ----------------------------------------------------------
-        # The following secrets must be set in the GitHub repository:
-        #   - SSH_HOST        : IP or domain of the VPS
-        #   - SSH_USER        : SSH username
-        #   - SSH_PRIVATE_KEY : Private SSH key (with proper permissions)
-        #   - SSH_PORT        : SSH port (optional, defaults to 22)
-        - name: Deploy via SSH
-          uses: appleboy/ssh-action@v1.2.0
-          with:
-            host: ${{ secrets.SSH_HOST }}
-            username: ${{ secrets.SSH_USER }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            port: ${{ secrets.SSH_PORT || 22 }}
-            script: |
-              set -e
-              echo "🚀 Starting deployment..."
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-              # 1. Go to the project directory
-              cd /var/www/node_stripe_payment_microservice
+      - name: Sync code to VPS
+        run: |
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude '.git' \
+            --exclude 'logs' \
+            --exclude 'storage' \
+            --exclude='ecosystem.config.js' \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/node_stripe_payment_microservice/
 
-              # 2. Pull the latest changes
-              git pull origin main
+      - name: Install dependencies and restart PM2
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /var/www/node_stripe_payment_microservice
+            pnpm install --prefer-frozen-lockfile --ignore-workspace
+            pm2 restart ecosystem.config.js --env /var/www/node_stripe_payment_microservice/.env
+            pm2 save
+          EOF
 
-              # 3. Install dependencies (if any changed)
-              pnpm install --prefer-frozen-lockfile --ignore-workspace
-
-              # 4. Reload the app into the PM2 processes
-              if pm2 describe node_stripe_payment_microservice > /dev/null 2>&1; then
-                pm2 reload node_stripe_payment_microservice
-              else
-                pm2 start server.js --name node_stripe_payment_microservice --env production
-              fi
-
-              # 5. Save PM2 process list (optional)
-              pm2 save
-
-              echo "✅ Deployment completed successfully!"
+      - name: Health check
+        run: |
+          sleep 10
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.DEPLOY_DOMAIN }}/storage/health)
+          if [ $response -ne 200 ]; then
+            echo "❌ Storage health check failed with status $response"
+            exit 1
+          fi
+          echo "✅ Storage health check passed"
