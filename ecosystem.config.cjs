@@ -18,6 +18,8 @@ module.exports = {
                 EMAIL: process.env.EMAIL,
                 EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
                 ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+                EMAILING_MS_URL: process.env.EMAILING_MS_URL,
+                JWT_SECRET: process.env.JWT_SECRET,
                 STORAGE_MS_URL: process.env.STORAGE_MS_URL,
                 STORAGE_TOKEN: process.env.STORAGE_TOKEN,
                 STORAGE_PROJECT: process.env.STORAGE_PROJECT,
