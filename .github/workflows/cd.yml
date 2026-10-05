@@ -31,7 +31,6 @@ jobs:
             --exclude '.git' \
             --exclude 'logs' \
             --exclude 'storage' \
-            --exclude='ecosystem.config.js' \
             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/node_stripe_payment_microservice/
 
       - name: Install dependencies and restart PM2

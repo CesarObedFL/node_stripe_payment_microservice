@@ -3,5 +3,5 @@ pnpm-lock.yaml
 .env
 logs/
 *.log
-.DS_Store
+.DS_Stores
 *results.txt
