@@ -1,6 +1,5 @@
-// webhooks/webhook_handler.js
 import stripe from '../services/stripe_service.js';
-import { send_email } from '../services/email_service.js';
+import { send_email } from '../services/emailing_service.js';
 import { save_payment_record } from '../services/storage_service.js';
 import dotenv from 'dotenv';
 
@@ -105,24 +104,16 @@ async function handle_payment_succeeded(paymentIntent) {
         await send_email(
             customerEmail,
             `✅ Confirmación de pago - ${planName}`,
-            `Hemos recibido tu pago por <strong>${planName}</strong>.<br>
-             <strong>Monto:</strong> ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}<br>
-             <strong>ID:</strong> ${paymentIntent.id}<br>
-             En breve recibirás más información sobre la activación de tu servicio.<br><br>
-             Saludos,<br>El equipo de CesarObedFL`
+            `Hemos recibido tu pago por ${planName}. Monto: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}.`
         );
     }
 
-    // notify to the admin
+    // Notificar al admin
     if (ADMIN_EMAIL) {
         await send_email(
             ADMIN_EMAIL,
             `💰 Nuevo pago recibido - ${planName}`,
-            `Cliente: ${customerEmail || 'Sin email'}<br>
-             Plan: ${planName}<br>
-             Monto: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}<br>
-             ID: ${paymentIntent.id}<br>
-             Metadatos: ${JSON.stringify(paymentIntent.metadata)}`
+            `Cliente: ${customerEmail}. Plan: ${planName}. Monto: ${(paymentIntent.amount / 100).toFixed(2)} ${paymentIntent.currency.toUpperCase()}.`
         );
     }
 }
