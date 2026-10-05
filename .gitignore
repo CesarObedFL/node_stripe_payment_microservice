@@ -3,5 +3,6 @@ pnpm-lock.yaml
 .env
 logs/
 *.log
-.DS_Stores
+.DS_Storess
 *results.txt
+ecosystem.config.cjs

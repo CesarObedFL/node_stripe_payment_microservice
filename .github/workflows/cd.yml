@@ -31,6 +31,7 @@ jobs:
             --exclude '.git' \
             --exclude 'logs' \
             --exclude 'storage' \
+            --exclude 'ecosystem.config.cjs'
             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/node_stripe_payment_microservice/
 
       - name: Install dependencies and restart PM2
@@ -38,7 +39,7 @@ jobs:
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /var/www/node_stripe_payment_microservice
             pnpm install --prefer-frozen-lockfile --ignore-workspace
-            pm2 restart ecosystem.config.js --env /var/www/node_stripe_payment_microservice/.env
+            pm2 restart ecosystem.config.cjs --env /var/www/node_stripe_payment_microservice/.env
             pm2 save
           EOF
 
