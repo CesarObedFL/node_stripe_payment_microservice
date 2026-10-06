@@ -8,32 +8,27 @@ const EMAILING_MS_URL = process.env.EMAILING_MS_URL || 'http://localhost:3000';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
- * Generates a short-lived JWT that the emailing microservice accepts.
+ * Generates a short-lived JWT for the emailing microservice.
  *
- * @param {object} payload - Additional data to include in the token (optional).
- * @returns {string} The signed JWT.
+ * @returns {string} Signed JWT.
  */
-function generate_email_token(payload = {}) {
+function generate_email_token() {
     if (!JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined in environment variables');
     }
     return jwt.sign(
-        {
-            verified: true,
-            type: 'email_verification',
-            ...payload
-        },
+        { verified: true, type: 'email_verification' },
         JWT_SECRET,
-        { expiresIn: '5m' } // Token válido solo 5 minutos
+        { expiresIn: '5m' }
     );
 }
 
 /**
- * Sends an email via the emailing microservice.
+ * Sends a transactional notification email via the emailing microservice.
  *
  * @param {string} to - Recipient email.
  * @param {string} subject - Email subject.
- * @param {string} message - Email body (plain text or simple HTML).
+ * @param {string} message - Email body (HTML string).
  * @returns {Promise<object>} Response from the emailing microservice.
  */
 export async function send_email(to, subject, message) {
@@ -42,17 +37,21 @@ export async function send_email(to, subject, message) {
         return { skipped: true };
     }
 
-    const token = generate_email_token({ recipient: to });
+    if (!to) {
+        console.warn('⚠️ No recipient provided. Skipping email.');
+        return { skipped: true };
+    }
+
+    const token = generate_email_token();
 
     const body = {
-        full_name: 'Payment Microservice',
-        email: to,
+        to: to,
         subject: subject,
         message: message
     };
 
     try {
-        const response = await fetch(`${EMAILING_MS_URL}/request`, {
+        const response = await fetch(`${EMAILING_MS_URL}/notify`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
