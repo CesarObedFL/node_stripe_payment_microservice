@@ -29,7 +29,7 @@ export async function save_payment_record(paymentData) {
         return null;
     }
 
-    const url = `${STORAGE_MS_URL}/storage/${STORAGE_PROJECT}/${STORAGE_FILE}/records`;
+    const url = `${STORAGE_MS_URL}/${STORAGE_PROJECT}/${STORAGE_FILE}/records`;
 
     const payload = {
         payment_intent_id: paymentData.payment_intent_id,
