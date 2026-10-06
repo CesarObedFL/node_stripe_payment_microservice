@@ -15,8 +15,6 @@ module.exports = {
                 CLIENT_URL: process.env.CLIENT_URL,
                 STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
                 STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-                EMAIL: process.env.EMAIL,
-                EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
                 ADMIN_EMAIL: process.env.ADMIN_EMAIL,
                 EMAILING_MS_URL: process.env.EMAILING_MS_URL,
                 JWT_SECRET: process.env.JWT_SECRET,
