@@ -12,6 +12,7 @@ const get_plan_details = (plan_id) => {
         'freelance_basic': {
             amount: 11600,
             currency: 'usd',
+            hourly: false,
             description: 'Freelance - Básico: Diseño personalizado, 5 páginas, SEO, CMS',
             metadata: {
                 plan_type: 'freelance',
@@ -24,6 +25,7 @@ const get_plan_details = (plan_id) => {
         'freelance_standard': {
             amount: 29000,
             currency: 'usd',
+            hourly: false,
             description: 'Freelance - Standard: Panel administración, 10 páginas, BD, Autenticación',
             metadata: {
                 plan_type: 'freelance',
@@ -36,6 +38,7 @@ const get_plan_details = (plan_id) => {
         'freelance_premium': {
             amount: 46400,
             currency: 'usd',
+            hourly: false,
             description: 'Freelance - Premium: E-commerce con Bagisto, páginas ilimitadas',
             metadata: {
                 plan_type: 'freelance',
@@ -48,6 +51,7 @@ const get_plan_details = (plan_id) => {
         'maintenance_basic': {
             amount: 8120,
             currency: 'usd',
+            hourly: false,
             description: 'Mantenimiento - Básico: Preventivo y correctivo básico',
             metadata: {
                 plan_type: 'maintenance',
@@ -60,6 +64,7 @@ const get_plan_details = (plan_id) => {
         'maintenance_specialized': {
             amount: 17400,
             currency: 'usd',
+            hourly: false,
             description: 'Mantenimiento - Especializado: Respuesta prioritaria, monitoreo continuo',
             metadata: {
                 plan_type: 'maintenance',
@@ -70,9 +75,11 @@ const get_plan_details = (plan_id) => {
             }
         },
         'maintenance_custom': {
-            amount: 2320,
+            amount: 2320,           // monto base (1 hora)
             currency: 'usd',
             description: 'Mantenimiento - Personalizado: Servicio por hora',
+            hourly: true,           // ← nuevo
+            hourly_rate: 2320,      // ← nuevo (en centavos: $23.20)
             metadata: {
                 plan_type: 'maintenance',
                 plan_name: 'Personalizado',
@@ -100,7 +107,7 @@ const get_plan_details = (plan_id) => {
  */
 export const create_payment_intent = async (req, res) => {
     try {
-        const { plan_id, customer_email, metadata = {} } = req.body;
+        const { plan_id, customer_email, metadata = {}, hours } = req.body;
 
         // Validar que se haya enviado plan_id
         if (!plan_id) {
@@ -112,9 +119,19 @@ export const create_payment_intent = async (req, res) => {
         // Obtener detalles del plan (lanza error si no existe)
         const plan = get_plan_details(plan_id);
 
+        // si el plan es por horas se calcula el monto final
+        let final_amount = plan.amount;
+        let applied_hours = null;
+
+        if (plan.hourly) {
+            const numeric_hours = Math.max(1, Math.min(parseInt(hours, 10) || 1, 40));
+            final_amount = plan.hourly_rate * numeric_hours;
+            applied_hours = numeric_hours;
+        }
+
         // Crear PaymentIntent en Stripe
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: plan.amount,
+            amount: final_amount,
             currency: plan.currency,
             description: plan.description,
             receipt_email: customer_email || undefined,
@@ -122,6 +139,8 @@ export const create_payment_intent = async (req, res) => {
                 ...plan.metadata,
                 ...metadata,
                 plan_id: plan_id,
+                hours: applied_hours !== null ? String(applied_hours) : 'N/A',
+                hourly_rate: plan.hourly ? (plan.hourly_rate / 100).toFixed(2) : 'N/A',
                 service: 'payment-microservice',
                 timestamp: new Date().toISOString()
             }
@@ -133,6 +152,7 @@ export const create_payment_intent = async (req, res) => {
             paymentIntentId: paymentIntent.id,
             amount: paymentIntent.amount,
             currency: paymentIntent.currency,
+            hours: applied_hours,
             plan: plan.metadata
         });
 
